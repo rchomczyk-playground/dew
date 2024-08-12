@@ -1,7 +1,5 @@
 package dev.shiza.dew.event;
 
-import static dev.shiza.dew.subscription.SubscriptionFacade.getSubscriptionFacade;
-
 import dev.shiza.dew.subscription.Subscriber;
 import dev.shiza.dew.subscription.Subscription;
 import dev.shiza.dew.subscription.SubscriptionFacade;
@@ -14,10 +12,6 @@ final class EventBusImpl implements EventBus {
 
   EventBusImpl(final SubscriptionFacade subscriptionFacade) {
     this.subscriptionFacade = subscriptionFacade;
-  }
-
-  EventBusImpl() {
-    this(getSubscriptionFacade());
   }
 
   @Override
