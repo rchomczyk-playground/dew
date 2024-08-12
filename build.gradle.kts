@@ -1,10 +1,11 @@
 plugins {
-    java
-    `maven-publish`
+    id("java")
+    id("maven-publish")
+    id("pl.allegro.tech.build.axion-release") version("1.18.0")
 }
 
 group = "dev.shiza"
-version = "1.0-SNAPSHOT"
+version = scmVersion.version
 
 repositories {
     mavenCentral()
