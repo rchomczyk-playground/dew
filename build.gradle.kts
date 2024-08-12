@@ -1,5 +1,6 @@
 plugins {
-    id("java")
+    java
+    `maven-publish`
 }
 
 group = "dev.shiza"
