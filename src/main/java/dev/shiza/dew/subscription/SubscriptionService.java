@@ -1,7 +1,6 @@
 package dev.shiza.dew.subscription;
 
 import static java.lang.invoke.MethodHandles.privateLookupIn;
-import static java.lang.invoke.MethodType.methodType;
 import static java.lang.reflect.Modifier.isPublic;
 import static java.util.Arrays.stream;
 import static java.util.Collections.emptySet;
@@ -72,19 +71,10 @@ final class SubscriptionService implements SubscriptionFacade {
 
   private MethodHandle getMethodHandle(final Class<?> subscriberType, final Method method) {
     try {
-      return getLookupForClass(subscriberType)
-          .findVirtual(
-              subscriberType,
-              method.getName(),
-              methodType(void.class, method.getParameterTypes()[0]));
+      return getLookupForClass(subscriberType).unreflect(method);
     } catch (final IllegalAccessException exception) {
       throw new SubscribingException(
           "Could not resolve method handle for %s method, because of illegal access."
-              .formatted(method.getName()),
-          exception);
-    } catch (final NoSuchMethodException exception) {
-      throw new SubscribingException(
-          "Could not resolve method handle for %s method, because of malformed reference."
               .formatted(method.getName()),
           exception);
     }
