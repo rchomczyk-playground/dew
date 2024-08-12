@@ -1,7 +1,7 @@
 plugins {
     id("java")
     id("maven-publish")
-    id("pl.allegro.tech.build.axion-release") version("1.18.0")
+    id("pl.allegro.tech.build.axion-release") version("1.18.4")
 }
 
 group = "dev.shiza"
