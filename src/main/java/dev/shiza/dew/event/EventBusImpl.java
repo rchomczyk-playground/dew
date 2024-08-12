@@ -29,14 +29,14 @@ final class EventBusImpl implements EventBus {
   }
 
   private void notifySubscription(final Subscription subscription, final Event event) {
-    final Object subscriber = subscription.subscriber();
+    final Subscriber subscriber = subscription.subscriber();
     for (final MethodHandle invocation : subscription.invocations()) {
       notifySubscribedMethods(invocation, subscriber, event);
     }
   }
 
   private void notifySubscribedMethods(
-      final MethodHandle invocation, final Object subscriber, final Event event) {
+      final MethodHandle invocation, final Subscriber subscriber, final Event event) {
     try {
       invocation.invoke(subscriber, event);
     } catch (final Throwable exception) {
