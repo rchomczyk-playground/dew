@@ -6,7 +6,7 @@ import java.util.Set;
 
 public sealed interface SubscriptionFacade permits SubscriptionService {
 
-  static SubscriptionFacade getSubscriptionFacade() {
+  static SubscriptionFacade create() {
     return new SubscriptionService(new HashMap<>());
   }
 

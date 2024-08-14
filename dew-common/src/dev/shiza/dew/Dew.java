@@ -1,15 +1,13 @@
 package dev.shiza.dew;
 
-import static dev.shiza.dew.event.EventBus.getEventBus;
-import static dev.shiza.dew.subscription.SubscriptionFacade.getSubscriptionFacade;
-
 import dev.shiza.dew.event.EventBus;
+import dev.shiza.dew.subscription.SubscriptionFacade;
 
 public final class Dew {
 
   private Dew() {}
 
-  public static EventBus eventBus() {
-    return getEventBus(getSubscriptionFacade());
+  public static EventBus create() {
+    return EventBus.create(SubscriptionFacade.create());
   }
 }

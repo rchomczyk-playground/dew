@@ -6,7 +6,7 @@ import dev.shiza.dew.subscription.SubscriptionFacade;
 
 public sealed interface EventBus permits EventBusImpl {
 
-  static EventBus getEventBus(final SubscriptionFacade subscriptionFacade) {
+  static EventBus create(final SubscriptionFacade subscriptionFacade) {
     return new EventBusImpl(subscriptionFacade);
   }
 
