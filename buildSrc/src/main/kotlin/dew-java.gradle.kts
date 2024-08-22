@@ -2,6 +2,10 @@ plugins {
     `java-library`
 }
 
+dependencies {
+    compileOnly("org.jetbrains:annotations:24.1.0")
+}
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(17)
