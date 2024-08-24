@@ -19,15 +19,15 @@ public interface Dew {
    * @return the singleton instance of {@link EventBus}.
    */
   static EventBus eventBus() {
-    return Instances.EVENT_BUS.get();
+    return InstanceHolder.EVENT_BUS.get();
   }
 
   @Internal
-  final class Instances {
+  final class InstanceHolder {
 
     private static final Lazy<EventBus> EVENT_BUS =
         lazy(() -> EventBus.create(SubscriptionFacade.create()));
 
-    private Instances() {}
+    private InstanceHolder() {}
   }
 }
