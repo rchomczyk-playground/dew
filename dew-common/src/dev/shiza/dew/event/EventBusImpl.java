@@ -4,6 +4,7 @@ import dev.shiza.dew.subscription.Subscriber;
 import dev.shiza.dew.subscription.Subscription;
 import dev.shiza.dew.subscription.SubscriptionFacade;
 import java.lang.invoke.MethodHandle;
+import java.util.Arrays;
 import java.util.Set;
 
 final class EventBusImpl implements EventBus {
@@ -20,16 +21,21 @@ final class EventBusImpl implements EventBus {
   }
 
   @Override
-  public void publish(final Event event) {
+  public void publish(final Event event, final String... targets) {
     final Set<Subscription> subscriptions =
         subscriptionFacade.getSubscriptionsByEventType(event.getClass());
     for (final Subscription subscription : subscriptions) {
-      notifySubscription(subscription, event);
+      notifySubscription(subscription, event, targets);
     }
   }
 
-  private void notifySubscription(final Subscription subscription, final Event event) {
+  private void notifySubscription(
+      final Subscription subscription, final Event event, final String[] targets) {
     final Subscriber subscriber = subscription.subscriber();
+    if (hasSpecifiedTarget(targets) && isExcludedSubscription(subscriber, targets)) {
+      return;
+    }
+
     for (final MethodHandle invocation : subscription.invocations()) {
       notifySubscribedMethods(invocation, subscriber, event);
     }
@@ -44,5 +50,13 @@ final class EventBusImpl implements EventBus {
           "Could not publish event, because of unexpected exception during method invocation.",
           exception);
     }
+  }
+
+  private boolean hasSpecifiedTarget(final String[] targets) {
+    return targets.length > 0;
+  }
+
+  private boolean isExcludedSubscription(final Subscriber subscriber, final String[] targets) {
+    return Arrays.stream(targets).noneMatch(identity -> subscriber.identity().equals(identity));
   }
 }
