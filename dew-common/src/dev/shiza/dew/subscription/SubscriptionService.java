@@ -20,24 +20,16 @@ import java.util.Set;
 final class SubscriptionService implements SubscriptionFacade {
 
   private static final Lookup LOOKUP = MethodHandles.lookup();
-  private final Set<Class<? extends Subscriber>> subscribers;
   private final Map<Class<? extends Event>, Set<Subscription>> subscriptionsByEventType;
 
   SubscriptionService(
       final Map<Class<? extends Event>, Set<Subscription>> subscriptionsByEventType) {
-    this.subscribers = new HashSet<>();
     this.subscriptionsByEventType = subscriptionsByEventType;
   }
 
   @Override
   public void subscribe(final Subscriber subscriber) throws SubscribingException {
     final Class<? extends Subscriber> subscriberType = subscriber.getClass();
-    if (subscribers.contains(subscriberType)) {
-      throw new SubscribingException(
-          "Could not register subscription, because of duplicated call for %s subscriber."
-              .formatted(subscriberType.getSimpleName()));
-    }
-
     final Map<Class<? extends Event>, Set<MethodHandle>> methodReferencesByEventType =
         stream(subscriberType.getDeclaredMethods())
             .filter(this::isSubscribedMethod)
@@ -49,8 +41,6 @@ final class SubscriptionService implements SubscriptionFacade {
           .computeIfAbsent(entry.getKey(), key -> new HashSet<>())
           .add(new Subscription(subscriber, entry.getValue()));
     }
-
-    subscribers.add(subscriberType);
   }
 
   @Override
