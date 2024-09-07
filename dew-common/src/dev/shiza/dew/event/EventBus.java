@@ -6,8 +6,13 @@ import dev.shiza.dew.subscription.SubscriptionFacade;
 
 public sealed interface EventBus permits EventBusImpl {
 
+  static EventBus create(
+      final EventExecutor eventExecutor, final SubscriptionFacade subscriptionFacade) {
+    return new EventBusImpl(eventExecutor, subscriptionFacade);
+  }
+
   static EventBus create(final SubscriptionFacade subscriptionFacade) {
-    return new EventBusImpl(subscriptionFacade);
+    return create(Runnable::run, subscriptionFacade);
   }
 
   void subscribe(final Subscriber subscriber) throws SubscribingException;

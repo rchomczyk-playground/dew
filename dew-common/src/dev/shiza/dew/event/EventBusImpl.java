@@ -9,9 +9,11 @@ import java.util.Set;
 
 final class EventBusImpl implements EventBus {
 
+  private final EventExecutor eventExecutor;
   private final SubscriptionFacade subscriptionFacade;
 
-  EventBusImpl(final SubscriptionFacade subscriptionFacade) {
+  EventBusImpl(final EventExecutor eventExecutor, final SubscriptionFacade subscriptionFacade) {
+    this.eventExecutor = eventExecutor;
     this.subscriptionFacade = subscriptionFacade;
   }
 
@@ -22,11 +24,14 @@ final class EventBusImpl implements EventBus {
 
   @Override
   public void publish(final Event event, final String... targets) {
-    final Set<Subscription> subscriptions =
-        subscriptionFacade.getSubscriptionsByEventType(event.getClass());
-    for (final Subscription subscription : subscriptions) {
-      notifySubscription(subscription, event, targets);
-    }
+    eventExecutor.execute(
+        () -> {
+          final Set<Subscription> subscriptions =
+              subscriptionFacade.getSubscriptionsByEventType(event.getClass());
+          for (final Subscription subscription : subscriptions) {
+            notifySubscription(subscription, event, targets);
+          }
+        });
   }
 
   private void notifySubscription(
