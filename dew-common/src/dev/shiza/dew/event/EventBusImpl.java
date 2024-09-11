@@ -9,12 +9,17 @@ import java.util.Set;
 
 final class EventBusImpl implements EventBus {
 
-  private final EventExecutor eventExecutor;
   private final SubscriptionFacade subscriptionFacade;
+  private EventPublisher publisher;
 
-  EventBusImpl(final EventExecutor eventExecutor, final SubscriptionFacade subscriptionFacade) {
-    this.eventExecutor = eventExecutor;
+  EventBusImpl(final SubscriptionFacade subscriptionFacade) {
     this.subscriptionFacade = subscriptionFacade;
+  }
+
+  @Override
+  public EventBus publisher(final EventPublisher publisher) {
+    this.publisher = publisher;
+    return this;
   }
 
   @Override
@@ -23,26 +28,38 @@ final class EventBusImpl implements EventBus {
   }
 
   @Override
+  public void publish(
+      final EventPublisher eventPublisher, final Event event, final String... targets)
+      throws EventPublishingException {
+    final Set<Subscription> subscriptions =
+        subscriptionFacade.getSubscriptionsByEventType(event.getClass());
+    for (final Subscription subscription : subscriptions) {
+      notifySubscription(subscription, eventPublisher, event, targets);
+    }
+  }
+
+  @Override
   public void publish(final Event event, final String... targets) {
-    eventExecutor.execute(
-        () -> {
-          final Set<Subscription> subscriptions =
-              subscriptionFacade.getSubscriptionsByEventType(event.getClass());
-          for (final Subscription subscription : subscriptions) {
-            notifySubscription(subscription, event, targets);
-          }
-        });
+    if (publisher == null) {
+      throw new EventPublishingException(
+          "Could not publish event, because of not specifying default event publisher.");
+    }
+
+    publish(publisher, event, targets);
   }
 
   private void notifySubscription(
-      final Subscription subscription, final Event event, final String[] targets) {
+      final Subscription subscription,
+      final EventPublisher eventPublisher,
+      final Event event,
+      final String[] targets) {
     final Subscriber subscriber = subscription.subscriber();
     if (hasSpecifiedTarget(targets) && isExcludedSubscription(subscriber, targets)) {
       return;
     }
 
     for (final MethodHandle invocation : subscription.invocations()) {
-      notifySubscribedMethods(invocation, subscriber, event);
+      eventPublisher.execute(() -> notifySubscribedMethods(invocation, subscriber, event));
     }
   }
 
