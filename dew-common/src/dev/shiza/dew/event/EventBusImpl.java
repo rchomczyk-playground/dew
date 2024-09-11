@@ -1,5 +1,7 @@
 package dev.shiza.dew.event;
 
+import dev.shiza.dew.result.ResultHandler;
+import dev.shiza.dew.result.ResultHandlerFacade;
 import dev.shiza.dew.subscription.Subscriber;
 import dev.shiza.dew.subscription.Subscription;
 import dev.shiza.dew.subscription.SubscriptionFacade;
@@ -10,15 +12,24 @@ import java.util.Set;
 final class EventBusImpl implements EventBus {
 
   private final SubscriptionFacade subscriptionFacade;
-  private EventPublisher publisher;
+  private final ResultHandlerFacade resultHandlerFacade;
+  private EventPublisher eventPublisher;
 
-  EventBusImpl(final SubscriptionFacade subscriptionFacade) {
+  EventBusImpl(
+      final SubscriptionFacade subscriptionFacade, final ResultHandlerFacade resultHandlerFacade) {
     this.subscriptionFacade = subscriptionFacade;
+    this.resultHandlerFacade = resultHandlerFacade;
   }
 
   @Override
-  public EventBus publisher(final EventPublisher publisher) {
-    this.publisher = publisher;
+  public EventBus publisher(final EventPublisher eventPublisher) {
+    this.eventPublisher = eventPublisher;
+    return this;
+  }
+
+  @Override
+  public <T> EventBus result(final Class<T> resultType, final ResultHandler<T> resultHandler) {
+    resultHandlerFacade.register(resultType, resultHandler);
     return this;
   }
 
@@ -40,12 +51,12 @@ final class EventBusImpl implements EventBus {
 
   @Override
   public void publish(final Event event, final String... targets) {
-    if (publisher == null) {
+    if (eventPublisher == null) {
       throw new EventPublishingException(
           "Could not publish event, because of not specifying default event publisher.");
     }
 
-    publish(publisher, event, targets);
+    publish(eventPublisher, event, targets);
   }
 
   private void notifySubscription(
@@ -66,7 +77,7 @@ final class EventBusImpl implements EventBus {
   private void notifySubscribedMethods(
       final MethodHandle invocation, final Subscriber subscriber, final Event event) {
     try {
-      invocation.invoke(subscriber, event);
+      resultHandlerFacade.process(invocation.invoke(subscriber, event));
     } catch (final Throwable exception) {
       throw new EventPublishingException(
           "Could not publish event, because of unexpected exception during method invocation.",
